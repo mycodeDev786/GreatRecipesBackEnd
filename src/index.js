@@ -4,6 +4,9 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const userRoutes = require("./routes/userRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
+const recipesRoutes = require("./routes/recipes");
+const reviewsRoutes = require("./routes/reviews");
 
 const app = express();
 app.use(express.json());
@@ -13,6 +16,10 @@ app.get("/health", (req, res) => {
 });
 app.use("/users", userRoutes);
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/categories", categoryRoutes);
+app.use("/api/recipes", recipesRoutes);
+app.use("/api/reviews", reviewsRoutes);
+
 app.use("/uploads", express.static("uploads"));
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
