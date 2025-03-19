@@ -32,21 +32,28 @@ exports.createRecipe = async (req, res) => {
     try {
       const {
         user_id,
-        category_id,
-        subcategory_id,
+        category_name,
+        subcategory_name,
         title,
         description,
         ingredients,
+        avoid_tips,
+        steps,
+        recipe_type,
         price,
+        buyer_restriction,
       } = req.body;
 
       if (
         !user_id ||
-        !category_id ||
-        !subcategory_id ||
+        !category_name ||
+        !subcategory_name ||
         !title ||
         !description ||
-        !ingredients
+        !steps ||
+        !avoid_tips ||
+        !ingredients ||
+        !buyer_restriction
       ) {
         return res.status(400).json({ message: "Required fields are missing" });
       }
@@ -58,16 +65,20 @@ exports.createRecipe = async (req, res) => {
       const [result] = await db
         .promise()
         .query(
-          "INSERT INTO recipes (user_id, category_id, subcategory_id, title, description, ingredients, price, image, average_rating, rating_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          "INSERT INTO recipes (user_id, category_name , subcategory_name, title, description, ingredients,steps,avoid_tips,mainImage,recipe_type , price, buyer_restriction,  average_rating, ratings_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?)",
           [
             user_id,
-            category_id,
-            subcategory_id,
+            category_name,
+            subcategory_name,
             title,
             description,
             ingredients,
-            price || null,
+            steps,
+            avoid_tips,
             mainImage,
+            recipe_type,
+            price || 0,
+            buyer_restriction,
             0, // Default average_rating
             0, // Default rating_count
           ]
@@ -81,7 +92,7 @@ exports.createRecipe = async (req, res) => {
           db
             .promise()
             .query(
-              "INSERT INTO recipe_images (recipe_id, image) VALUES (?, ?)",
+              "INSERT INTO recipe_photos (recipe_id, image) VALUES (?, ?)",
               [recipeId, `/uploads/${file.filename}`]
             )
         );
@@ -106,7 +117,7 @@ exports.getAllRecipes = async (req, res) => {
       recipes.map(async (recipe) => {
         const [images] = await db
           .promise()
-          .query("SELECT image FROM recipe_images WHERE recipe_id = ?", [
+          .query("SELECT image FROM recipe_photos WHERE recipe_id = ?", [
             recipe.id,
           ]);
         return { ...recipe, additionalImages: images.map((img) => img.image) };
@@ -221,6 +232,31 @@ exports.deleteRecipe = async (req, res) => {
     }
 
     res.status(200).json({ message: "Recipe deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.updateRecipeCategory = async (req, res) => {
+  try {
+    const { recipe_id, category_name, subcategory_name } = req.body;
+
+    if (!recipe_id || !category_name || !subcategory_name) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const [result] = await db
+      .promise()
+      .query(
+        "UPDATE recipes SET category_name = ?, subcategory_name = ? WHERE id = ?",
+        [category_name, subcategory_name, recipe_id]
+      );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Recipe not found" });
+    }
+
+    res.status(200).json({ message: "Recipe category updated successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
