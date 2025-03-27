@@ -5,6 +5,7 @@ const recipesController = require("../controllers/recipesController");
 // Routes for recipes
 router.post("/", recipesController.createRecipe); // Create a new recipe with images
 router.get("/", recipesController.getAllRecipes); // Get all recipes
+router.get("/all", recipesController.getAllRecipesPost);
 router.get("/:id", recipesController.getRecipeById); // Get a recipe with images
 
 router.put("/:id", recipesController.updateRecipeCategory); // Update a recipe

@@ -142,7 +142,7 @@ exports.getRecipeById = async (req, res) => {
 
     const [images] = await db
       .promise()
-      .query("SELECT image FROM recipe_images WHERE recipe_id = ?", [id]);
+      .query("SELECT image FROM recipe_photos WHERE recipe_id = ?", [id]);
 
     res
       .status(200)
@@ -192,13 +192,13 @@ exports.updateRecipe = async (req, res) => {
       if (req.files["additionalImages"]) {
         await db
           .promise()
-          .query("DELETE FROM recipe_images WHERE recipe_id = ?", [id]);
+          .query("DELETE FROM recipe_photos WHERE recipe_id = ?", [id]);
 
         const imagePromises = req.files["additionalImages"].map((file) =>
           db
             .promise()
             .query(
-              "INSERT INTO recipe_images (recipe_id, image) VALUES (?, ?)",
+              "INSERT INTO recipe_photos (recipe_id, image) VALUES (?, ?)",
               [id, `/uploads/${file.filename}`]
             )
         );
@@ -259,5 +259,52 @@ exports.updateRecipeCategory = async (req, res) => {
     res.status(200).json({ message: "Recipe category updated successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getAllRecipesPost = async (req, res) => {
+  try {
+    console.log("Fetching recipes...");
+
+    const query = `
+    SELECT 
+      r.id, 
+      r.user_id, 
+      r.title, 
+      r.description, 
+      r.ingredients, 
+      r.mainImage AS image, 
+      r.recipe_type, 
+      r.price, 
+      r.category_name, 
+      r.subcategory_name, 
+      r.created_at AS date, 
+      r.average_rating AS rating, 
+      r.ratings_count,
+      b.user_id AS bakerId,
+      b.profile_image AS profileImage,
+      b.country AS bakerCountry,
+      b.flag AS bakerFlag,
+      b.isTop10Sales,
+      b.isTop10Followers,
+      b.rating AS bakerRating,
+      b.score AS bakerScore,
+      b.created_at AS bakerCreatedAt,
+      u.name AS bakerName,
+      (SELECT COUNT(*) FROM followers f WHERE f.baker_id = r.user_id) AS followersCount
+    FROM recipes r
+    LEFT JOIN bakers b ON r.user_id = b.user_id
+    LEFT JOIN users u ON b.user_id = u.id
+    GROUP BY r.id, b.user_id, b.profile_image, b.country, b.flag, b.isTop10Sales, 
+             b.isTop10Followers, b.rating, b.score, b.created_at, u.name;
+  `;
+
+    const [results] = await db.promise().query(query);
+
+    console.log("Query Results:", results);
+    res.json(results);
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Database query error" });
   }
 };

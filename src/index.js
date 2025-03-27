@@ -7,6 +7,8 @@ const userRoutes = require("./routes/userRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const recipesRoutes = require("./routes/recipes");
 const reviewsRoutes = require("./routes/reviews");
+const bakerRoutes = require("./routes/bakerRoutes");
+const followersRoutes = require("./routes/followersRoutes");
 
 const app = express();
 app.use(express.json());
@@ -19,6 +21,8 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/categories", categoryRoutes);
 app.use("/api/recipes", recipesRoutes);
 app.use("/api/reviews", reviewsRoutes);
+app.use("/api/bakers", bakerRoutes);
+app.use("/api/followers", followersRoutes);
 
 app.use("/uploads", express.static("uploads"));
 const PORT = process.env.PORT || 5000;
