@@ -1,6 +1,5 @@
 const db = require("../config/db");
 const multer = require("multer");
-const upload = multer({ storage });
 
 // Get all bakers
 exports.getAllBakers = async (req, res) => {
