@@ -2,16 +2,6 @@ const db = require("../config/db");
 const multer = require("multer");
 const upload = multer({ storage });
 
-// Configure Multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Ensure this folder exists
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
-  },
-});
-
 // Get all bakers
 exports.getAllBakers = async (req, res) => {
   try {
@@ -128,28 +118,3 @@ exports.deleteBaker = async (req, res) => {
 };
 
 // API to update profile_image based on user_id
-exports.updateProfileImage = async (req, res) => {
-  try {
-    const { user_id } = req.params;
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
-    const profile_image = `/uploads/${req.file.filename}`; // Save file path
-
-    const [result] = await db
-      .promise()
-      .query("UPDATE bakers SET profile_image = ? WHERE user_id = ?", [
-        profile_image,
-        user_id,
-      ]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Baker not found" });
-    }
-
-    res.json({ message: "Profile image updated successfully", profile_image });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
