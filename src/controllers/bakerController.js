@@ -1,5 +1,15 @@
 const db = require("../config/db");
 const multer = require("multer");
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Ensure this folder exists
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+  },
+});
+const upload = multer({ storage });
 
 // Get all bakers
 exports.getAllBakers = async (req, res) => {
