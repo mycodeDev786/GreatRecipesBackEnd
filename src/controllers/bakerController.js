@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const multer = require("multer");
+const path = require("path");
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -37,46 +38,60 @@ exports.getBakerById = async (req, res) => {
 
 // Create a new baker
 exports.createBaker = async (req, res) => {
-  try {
-    console.log(req.body); // Debugging
-
-    const {
-      user_id,
-      profile_image,
-      country,
-      flag,
-      isTop10Sales,
-      isTop10Followers,
-      rating,
-      score,
-    } = req.body;
-
-    if (!user_id) {
-      return res.status(400).json({ error: "user_id is required" });
+  upload.single("profile_image")(req, res, async (err) => {
+    if (err) {
+      return res.status(500).json({ error: "File upload failed" });
     }
 
-    const [result] = await db
-      .promise()
-      .query(
-        "INSERT INTO bakers (user_id, profile_image, country, flag, isTop10Sales, isTop10Followers, rating, score) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        [
-          user_id,
-          profile_image,
-          country,
-          flag,
-          isTop10Sales,
-          isTop10Followers,
-          rating,
-          score,
-        ]
-      );
+    try {
+      console.log("Request Body:", req.body);
+      console.log("Uploaded File:", req.file);
 
-    res
-      .status(201)
-      .json({ id: result.insertId, message: "Baker created successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+      const {
+        user_id,
+        country,
+        flag,
+        isTop10Sales,
+        isTop10Followers,
+        rating,
+        score,
+      } = req.body;
+
+      if (!user_id) {
+        return res.status(400).json({ error: "user_id is required" });
+      }
+
+      const profile_image = req.file ? "/uploads/" + req.file.filename : null;
+
+      // Convert boolean values to 0 or 1
+      const isTop10SalesInt = isTop10Sales === "true" ? 1 : 0;
+      const isTop10FollowersInt = isTop10Followers === "true" ? 1 : 0;
+
+      const [result] = await db
+        .promise()
+        .query(
+          "INSERT INTO bakers (user_id, profile_image, country, flag, isTop10Sales, isTop10Followers, rating, score) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          [
+            user_id,
+            profile_image,
+            country,
+            flag,
+            isTop10SalesInt,
+            isTop10FollowersInt,
+            rating,
+            score,
+          ]
+        );
+
+      res.status(201).json({
+        id: result.insertId,
+        message: "Baker created successfully",
+        profile_image,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
 };
 
 // Update a baker

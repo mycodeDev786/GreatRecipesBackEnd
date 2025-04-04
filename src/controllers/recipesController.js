@@ -131,27 +131,37 @@ exports.getAllRecipes = async (req, res) => {
 };
 
 // Get a recipe with images
-exports.getRecipeById = async (req, res) => {
+exports.getRecipesByUserId = async (req, res) => {
   try {
-    const { id } = req.params;
-    const [[recipe]] = await db
+    const { id } = req.params; // Get user ID from params
+
+    // Fetch all recipes for the given user ID
+    const [recipes] = await db
       .promise()
-      .query("SELECT * FROM recipes WHERE id = ?", [id]);
+      .query("SELECT * FROM recipes WHERE user_id = ?", [id]);
 
-    if (!recipe) return res.status(404).json({ message: "Recipe not found" });
+    if (recipes.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No recipes found for this user" });
+    }
 
-    const [images] = await db
-      .promise()
-      .query("SELECT image FROM recipe_photos WHERE recipe_id = ?", [id]);
+    // Fetch images for each recipe
+    for (const recipe of recipes) {
+      const [images] = await db
+        .promise()
+        .query("SELECT image FROM recipe_photos WHERE recipe_id = ?", [
+          recipe.id,
+        ]);
 
-    res
-      .status(200)
-      .json({ ...recipe, additionalImages: images.map((img) => img.image) });
+      recipe.additionalImages = images.map((img) => img.image);
+    }
+
+    res.status(200).json(recipes);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 // Update a recipe
 exports.updateRecipe = async (req, res) => {
   upload(req, res, async (err) => {
