@@ -9,15 +9,7 @@ const recipesRoutes = require("./routes/recipes");
 const reviewsRoutes = require("./routes/reviews");
 const bakerRoutes = require("./routes/bakerRoutes");
 const followersRoutes = require("./routes/followersRoutes");
-
-const privateKey = fs.readFileSync(
-  "/etc/letsencrypt/live/62.72.31.214/privkey.pem",
-  "utf8"
-);
-const certificate = fs.readFileSync(
-  "/etc/letsencrypt/live/62.72.31.214/fullchain.pem",
-  "utf8"
-);
+const seenRecipesRoutes = require("./routes/seenRecipes");
 
 const app = express();
 app.use(express.json());
@@ -32,6 +24,7 @@ app.use("/api/recipes", recipesRoutes);
 app.use("/api/reviews", reviewsRoutes);
 app.use("/api/bakers", bakerRoutes);
 app.use("/api/followers", followersRoutes);
+app.use("/api/seen-recipes", seenRecipesRoutes);
 
 app.use("/uploads", express.static("uploads"));
 const PORT = process.env.PORT || 5000;

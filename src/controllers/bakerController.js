@@ -50,6 +50,7 @@ exports.createBaker = async (req, res) => {
       const {
         user_id,
         country,
+        baker_name,
         flag,
         isTop10Sales,
         isTop10Followers,
@@ -70,9 +71,10 @@ exports.createBaker = async (req, res) => {
       const [result] = await db
         .promise()
         .query(
-          "INSERT INTO bakers (user_id, profile_image, country, flag, isTop10Sales, isTop10Followers, rating, score) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+          "INSERT INTO bakers (user_id,baker_name, profile_image, country, flag, isTop10Sales, isTop10Followers, rating, score) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)",
           [
             user_id,
+            baker_name,
             profile_image,
             country,
             flag,
@@ -142,3 +144,39 @@ exports.deleteBaker = async (req, res) => {
 };
 
 // API to update profile_image based on user_id
+// Update profile image by user_id
+exports.updateProfileImage = async (req, res) => {
+  upload.single("profilePicture")(req, res, async (err) => {
+    if (err) {
+      return res.status(500).json({ error: "File upload failed" });
+    }
+
+    try {
+      const userId = req.params.user_id;
+
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const imagePath = "/uploads/" + req.file.filename;
+
+      const [result] = await db
+        .promise()
+        .query("UPDATE bakers SET profile_image = ? WHERE user_id = ?", [
+          imagePath,
+          userId,
+        ]);
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Baker not found" });
+      }
+
+      res.json({
+        message: "Profile image updated successfully",
+        profile_image: imagePath,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+};

@@ -119,3 +119,45 @@ exports.isFollowing = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getFollowedBakersWithNotifications = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const [bakers] = await db.promise().execute(
+      `
+      SELECT 
+        b.id AS baker_id,
+        u.name AS baker_name,
+        b.profile_image,
+        COUNT(r.id) AS new_recipe_count,
+        GROUP_CONCAT(r.id) AS unseen_recipe_ids
+      FROM followers f
+      JOIN bakers b ON f.baker_id = b.user_id
+      JOIN users u ON u.id = b.user_id
+      LEFT JOIN recipes r ON r.user_id = u.id
+        AND r.id NOT IN (
+          SELECT sr.recipe_id 
+          FROM seen_recipes sr 
+          WHERE sr.user_id = ?
+        )
+      WHERE f.follower_id = ?
+      GROUP BY b.id, u.name, b.profile_image
+      `,
+      [userId, userId]
+    );
+
+    // Optionally parse unseen_recipe_ids into arrays
+    const result = bakers.map((baker) => ({
+      ...baker,
+      unseen_recipe_ids: baker.unseen_recipe_ids
+        ? baker.unseen_recipe_ids.split(",").map((id) => parseInt(id))
+        : [],
+    }));
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Error fetching followed bakers:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
