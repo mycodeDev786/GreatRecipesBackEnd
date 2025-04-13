@@ -15,7 +15,19 @@ const upload = multer({ storage });
 // Get all bakers
 exports.getAllBakers = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT * FROM bakers");
+    const [rows] = await db.promise().query(`
+      SELECT 
+        b.*, 
+        COUNT(f.follower_id) AS follower_count
+      FROM 
+        bakers b
+      LEFT JOIN 
+        followers f ON b.user_id = f.baker_id
+      GROUP BY 
+        b.user_id
+      ORDER BY 
+        b.created_at DESC
+    `);
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
