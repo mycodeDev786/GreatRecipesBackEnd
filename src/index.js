@@ -10,6 +10,7 @@ const reviewsRoutes = require("./routes/reviews");
 const bakerRoutes = require("./routes/bakerRoutes");
 const followersRoutes = require("./routes/followersRoutes");
 const seenRecipesRoutes = require("./routes/seenRecipes");
+const purchasesRoutes = require("./routes/purchases");
 
 const app = express();
 app.use(express.json());
@@ -25,6 +26,7 @@ app.use("/api/reviews", reviewsRoutes);
 app.use("/api/bakers", bakerRoutes);
 app.use("/api/followers", followersRoutes);
 app.use("/api/seen-recipes", seenRecipesRoutes);
+app.use("/api/purchases", purchasesRoutes);
 
 app.use("/uploads", express.static("uploads"));
 const PORT = process.env.PORT || 5000;
