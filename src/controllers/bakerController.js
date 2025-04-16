@@ -49,7 +49,6 @@ exports.getBakerById = async (req, res) => {
 };
 
 // Create a new baker
-// Create a new baker
 exports.createBaker = async (req, res) => {
   upload.single("profile_image")(req, res, async (err) => {
     if (err) {
@@ -57,8 +56,6 @@ exports.createBaker = async (req, res) => {
     }
 
     try {
-      console.log("Request Body:", req.body);
-
       const {
         user_id,
         country,
@@ -75,6 +72,19 @@ exports.createBaker = async (req, res) => {
       }
 
       const profile_image = req.file ? "/uploads/" + req.file.filename : null;
+
+      // 👇 Log all data before insertion
+      console.log("Insert Data:", {
+        user_id,
+        baker_name,
+        profile_image,
+        country,
+        flag,
+        isTop10Sales,
+        isTop10Followers,
+        rating,
+        score,
+      });
 
       const [result] = await db
         .promise()
@@ -104,6 +114,7 @@ exports.createBaker = async (req, res) => {
         profile_image,
       });
     } catch (error) {
+      console.error("Error creating baker:", error); // ✅ LOG THE REAL ERROR HERE
       res.status(500).json({ error: error.message });
     }
   });
