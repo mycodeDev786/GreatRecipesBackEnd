@@ -49,6 +49,7 @@ exports.getBakerById = async (req, res) => {
 };
 
 // Create a new baker
+// Create a new baker
 exports.createBaker = async (req, res) => {
   upload.single("profile_image")(req, res, async (err) => {
     if (err) {
@@ -83,7 +84,7 @@ exports.createBaker = async (req, res) => {
       const [result] = await db
         .promise()
         .query(
-          "INSERT INTO bakers (user_id,baker_name, profile_image, country, flag, isTop10Sales, isTop10Followers, rating, score) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)",
+          "INSERT INTO bakers (user_id, baker_name, profile_image, country, flag, isTop10Sales, isTop10Followers, rating, score) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
           [
             user_id,
             baker_name,
@@ -96,6 +97,10 @@ exports.createBaker = async (req, res) => {
             score,
           ]
         );
+
+      if (!result || result.affectedRows === 0) {
+        return res.status(500).json({ error: "Failed to create baker" });
+      }
 
       res.status(201).json({
         id: result.insertId,
