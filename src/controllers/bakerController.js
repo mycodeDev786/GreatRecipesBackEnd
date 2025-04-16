@@ -94,7 +94,7 @@ exports.createBaker = async (req, res) => {
         );
 
       if (!result || result.affectedRows === 0) {
-        console.error("Insert failed: ", result);
+        console.log("Insert failed: ", result);
         return res.status(500).json({ error: "Failed to create baker" });
       }
 
