@@ -58,7 +58,6 @@ exports.createBaker = async (req, res) => {
 
     try {
       console.log("Request Body:", req.body);
-      console.log("Uploaded File:", req.file);
 
       const {
         user_id,
@@ -77,10 +76,6 @@ exports.createBaker = async (req, res) => {
 
       const profile_image = req.file ? "/uploads/" + req.file.filename : null;
 
-      // Convert boolean values to 0 or 1
-      const isTop10SalesInt = isTop10Sales === "true" ? 1 : 0;
-      const isTop10FollowersInt = isTop10Followers === "true" ? 1 : 0;
-
       const [result] = await db
         .promise()
         .query(
@@ -91,14 +86,15 @@ exports.createBaker = async (req, res) => {
             profile_image,
             country,
             flag,
-            isTop10SalesInt,
-            isTop10FollowersInt,
+            isTop10Sales,
+            isTop10Followers,
             rating,
             score,
           ]
         );
 
       if (!result || result.affectedRows === 0) {
+        console.error("Insert failed: ", result);
         return res.status(500).json({ error: "Failed to create baker" });
       }
 
