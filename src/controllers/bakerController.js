@@ -18,13 +18,13 @@ exports.getAllBakers = async (req, res) => {
     const [rows] = await db.promise().query(`
       SELECT 
         b.*, 
-        COUNT(f.follower_id) AS follower_count
+        (
+          SELECT COUNT(*) 
+          FROM followers f 
+          WHERE f.baker_id = b.user_id
+        ) AS follower_count
       FROM 
         bakers b
-      LEFT JOIN 
-        followers f ON b.user_id = f.baker_id
-      GROUP BY 
-        b.user_id
       ORDER BY 
         b.created_at DESC
     `);
