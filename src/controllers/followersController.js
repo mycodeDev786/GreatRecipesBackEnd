@@ -130,6 +130,7 @@ exports.getFollowedBakersWithNotifications = async (req, res) => {
         b.id AS baker_id,
         u.name AS baker_name,
         b.profile_image,
+        b.flag,
         COUNT(r.id) AS new_recipe_count,
         GROUP_CONCAT(r.id) AS unseen_recipe_ids
       FROM followers f
