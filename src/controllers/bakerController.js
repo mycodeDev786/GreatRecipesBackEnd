@@ -1,4 +1,5 @@
-const db = require("../config/db");
+const getDb = require("../config/db");
+const db = getDb();
 const multer = require("multer");
 const path = require("path");
 // Configure Multer for file uploads

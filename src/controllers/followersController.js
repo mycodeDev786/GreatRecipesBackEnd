@@ -1,4 +1,5 @@
-const db = require("../config/db");
+const getDb = require("../config/db");
+const db = getDb();
 
 // Follow a baker
 exports.followBaker = async (req, res) => {

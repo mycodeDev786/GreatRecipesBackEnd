@@ -1,5 +1,8 @@
 // controllers/purchasesController.js
-const db = require("../config/db"); // your MySQL connection (e.g., mysql2 or mysql)
+
+const getDb = require("../config/db");
+const db = getDb();
+// your MySQL connection (e.g., mysql2 or mysql)
 
 exports.buyRecipe = (req, res) => {
   const buyerId = req.user.id; // from your auth middleware

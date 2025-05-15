@@ -1,4 +1,5 @@
-const db = require("../config/db");
+const getDb = require("../config/db");
+const db = getDb();
 
 // Mark a recipe as seen by the user
 exports.markRecipeAsSeen = async (req, res) => {

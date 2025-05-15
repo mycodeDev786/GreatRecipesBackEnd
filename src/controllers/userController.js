@@ -1,4 +1,5 @@
-const db = require("../config/db");
+const getDb = require("../config/db");
+const db = getDb();
 const { v4: uuidv4 } = require("uuid");
 
 // 🔹 Get all users
