@@ -115,7 +115,10 @@ exports.createRecipe = async (req, res) => {
 // Get all recipes
 exports.getAllRecipes = async (req, res) => {
   try {
-    const [recipes] = await db.promise().query("SELECT * FROM recipes");
+    // Sort recipes by created_at in descending order (latest first)
+    const [recipes] = await db
+      .promise()
+      .query("SELECT * FROM recipes ORDER BY created_at DESC");
 
     const recipesWithImages = await Promise.all(
       recipes.map(async (recipe) => {
