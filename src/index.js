@@ -11,6 +11,7 @@ const bakerRoutes = require("./routes/bakerRoutes");
 const followersRoutes = require("./routes/followersRoutes");
 const seenRecipesRoutes = require("./routes/seenRecipes");
 const purchasesRoutes = require("./routes/purchases");
+const paymentRoutes = require("./routes/payment");
 
 const app = express();
 app.use(express.json());
@@ -27,7 +28,7 @@ app.use("/api/bakers", bakerRoutes);
 app.use("/api/followers", followersRoutes);
 app.use("/api/seen-recipes", seenRecipesRoutes);
 app.use("/api/purchases", purchasesRoutes);
-
+app.use("/api/create-payment", paymentRoutes); // mount the /create-payment-intent route
 app.use("/uploads", express.static("uploads"));
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
