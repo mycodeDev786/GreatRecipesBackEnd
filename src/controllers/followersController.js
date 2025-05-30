@@ -128,7 +128,7 @@ exports.getFollowedBakersWithNotifications = async (req, res) => {
     const [bakers] = await db.promise().execute(
       `
       SELECT 
-        b.id AS baker_id,
+        b.user_id AS baker_id,
         u.name AS baker_name,
         b.profile_image,
         b.flag,
