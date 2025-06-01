@@ -335,7 +335,6 @@ exports.getRecipeById = async (req, res) => {
         r.title, 
         r.description, 
         r.ingredients, 
-        r.mainImage AS image, 
         r.recipe_type, 
         r.price, 
         r.category_name, 
@@ -353,7 +352,12 @@ exports.getRecipeById = async (req, res) => {
         b.score AS bakerScore,
         b.created_at AS bakerCreatedAt,
         u.name AS bakerName,
-        (SELECT COUNT(*) FROM followers f WHERE f.baker_id = r.user_id) AS followersCount
+        (SELECT COUNT(*) FROM followers f WHERE f.baker_id = r.user_id) AS followersCount,
+        (
+          SELECT JSON_ARRAYAGG(rp.image)
+          FROM recipe_photos rp
+          WHERE rp.recipe_id = r.id
+        ) AS allImages
       FROM recipes r
       LEFT JOIN bakers b ON r.user_id = b.user_id
       LEFT JOIN users u ON b.user_id = u.id
