@@ -44,6 +44,7 @@ exports.createRecipe = async (req, res) => {
         recipe_type,
         price,
         buyer_restriction,
+        difficulty_level,
       } = req.body;
 
       if (
@@ -68,7 +69,7 @@ exports.createRecipe = async (req, res) => {
       const [result] = await db
         .promise()
         .query(
-          "INSERT INTO recipes (user_id, category_name , subcategory_name, title, description, ingredients,combinedIngredients,steps,avoid_tips,mainImage,recipe_type , price, buyer_restriction,  average_rating, ratings_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?)",
+          "INSERT INTO recipes (user_id, category_name , subcategory_name, title, description, ingredients,combinedIngredients,steps,avoid_tips,mainImage,recipe_type , price, buyer_restriction , difficulty_level,  average_rating, ratings_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?)",
           [
             user_id,
             category_name,
@@ -83,6 +84,7 @@ exports.createRecipe = async (req, res) => {
             recipe_type,
             price || 0,
             buyer_restriction,
+            difficulty_level || null,
             0, // Default average_rating
             0, // Default rating_count
           ]
