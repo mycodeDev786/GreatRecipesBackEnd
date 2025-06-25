@@ -12,6 +12,7 @@ const followersRoutes = require("./routes/followersRoutes");
 const seenRecipesRoutes = require("./routes/seenRecipes");
 const purchasesRoutes = require("./routes/purchases");
 const paymentRoutes = require("./routes/payment");
+const convertRoute = require("./routes/convert");
 
 const app = express();
 app.use(express.json());
@@ -26,6 +27,7 @@ app.use("/api/recipes", recipesRoutes);
 app.use("/api/reviews", reviewsRoutes);
 app.use("/api/bakers", bakerRoutes);
 app.use("/api/followers", followersRoutes);
+app.use("/api/convert", convertRoute);
 app.use("/api/seen-recipes", seenRecipesRoutes);
 app.use("/api/purchases", purchasesRoutes);
 app.use("/api/create-payment", paymentRoutes); // mount the /create-payment-intent route

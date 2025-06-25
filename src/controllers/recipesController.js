@@ -23,9 +23,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage }).fields([
   { name: "mainImage", maxCount: 1 },
   { name: "additionalImages", maxCount: 3 },
+  { name: "stepImages", maxCount: 25 },
+  { name: "fullVideo", maxCount: 1 },
 ]);
 
-// Create a new recipe
+// Create a new recipe with steps, images, and optional video
 exports.createRecipe = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -40,7 +42,7 @@ exports.createRecipe = async (req, res) => {
         ingredients,
         combinedIngredients,
         avoid_tips,
-        steps,
+        steps, // JSON string
         recipe_type,
         price,
         buyer_restriction,
@@ -66,31 +68,56 @@ exports.createRecipe = async (req, res) => {
         ? `/uploads/${req.files["mainImage"][0].filename}`
         : null;
 
-      const [result] = await db
-        .promise()
-        .query(
-          "INSERT INTO recipes (user_id, category_name , subcategory_name, title, description, ingredients,combinedIngredients,steps,avoid_tips,mainImage,recipe_type , price, buyer_restriction , difficulty_level,  average_rating, ratings_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?)",
-          [
-            user_id,
-            category_name,
-            subcategory_name,
-            title,
-            description,
-            ingredients,
-            combinedIngredients,
-            steps,
-            avoid_tips,
-            mainImage,
-            recipe_type,
-            price || 0,
-            buyer_restriction,
-            difficulty_level || null,
-            0, // Default average_rating
-            0, // Default rating_count
-          ]
-        );
+      const fullVideo = req.files["fullVideo"]
+        ? `/uploads/${req.files["fullVideo"][0].filename}`
+        : null;
+
+      // Insert into recipes
+      const [result] = await db.promise().query(
+        `INSERT INTO recipes 
+           (user_id, category_name, subcategory_name, title, description, ingredients, combinedIngredients, steps, avoid_tips, mainImage, recipe_type, price, buyer_restriction, difficulty_level, fullVideo, average_rating, ratings_count) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          user_id,
+          category_name,
+          subcategory_name,
+          title,
+          description,
+          ingredients,
+          combinedIngredients,
+          steps,
+          avoid_tips,
+          mainImage,
+          recipe_type,
+          price || 0,
+          buyer_restriction,
+          difficulty_level || null,
+          fullVideo,
+          0,
+          0,
+        ]
+      );
 
       const recipeId = result.insertId;
+
+      // Store step-by-step data
+      const parsedSteps = JSON.parse(steps); // Array of { text: "...", imageIndex: 0 }
+      const stepImageFiles = req.files["stepImages"] || [];
+
+      const stepPromises = parsedSteps.map((step, index) => {
+        const stepImage = stepImageFiles[index]
+          ? `/uploads/${stepImageFiles[index].filename}`
+          : null;
+
+        return db
+          .promise()
+          .query(
+            "INSERT INTO recipe_steps (recipe_id, step_number, text, image) VALUES (?, ?, ?, ?)",
+            [recipeId, index + 1, step.text, stepImage]
+          );
+      });
+
+      await Promise.all(stepPromises);
 
       // Store additional images
       if (req.files["additionalImages"]) {
@@ -105,10 +132,12 @@ exports.createRecipe = async (req, res) => {
         await Promise.all(imagePromises);
       }
 
-      res
-        .status(201)
-        .json({ id: recipeId, message: "Recipe added successfully" });
+      res.status(201).json({
+        id: recipeId,
+        message: "Recipe added successfully",
+      });
     } catch (error) {
+      console.error("Error adding recipe:", error);
       res.status(500).json({ error: error.message });
     }
   });
